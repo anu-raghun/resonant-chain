@@ -49,7 +49,8 @@ def parabolic_roots(a,b,c,target):
     if quad<0:
         return np.nan, np.nan
     quad=np.sqrt(quad)
-    return 0.5*(-b-quad/a), 0.5*(-b+quad/a)
+    return (-b+quad)/(2*a), (-b-quad)/(2*a)
+
 
 def main():
     
@@ -61,14 +62,14 @@ def main():
     (t,brightness,randNoise)=makeNullData(mu,sigma,npoints,timeEnd)
     sigmas=sigma*np.ones(len(brightness))
     tstartIndex=4
-    widthPoints=1
+    widthPoints=10
     brightness=brightness+randNoise
     
     delta=np.linspace(-0.1,0.1,1000)
     diffLL=computeDeltaLLPerDepth(delta,t,mu,brightness,sigmas,tstartIndex,widthPoints)
 
     (a,b,c)=calc_parabola_vertex(delta[5], diffLL[5], delta[6], diffLL[6], delta[4], diffLL[4])
-    target=2.0
+    target=12.5
     print(a,b,c)
     intercepts=parabolic_roots(a,b,c,target)
 
@@ -76,9 +77,10 @@ def main():
     print(intercepts)
     print(diffLLTest)
     
-    diffLLY=np.ones(len(delta))
-    for i in range(len(delta)):
-        foo=delta[i]
+    newDelta=np.linspace(-0.1,0.1,100000)
+    diffLLY=np.ones(len(newDelta))
+    for i in range(len(newDelta)):
+        foo=newDelta[i]
         diffLLY[i]=a*(foo**2)+b*foo+c 
     
     
@@ -88,14 +90,18 @@ def main():
     plt.title('Delta Ln Likelihood vs. Depth of Box')
     plt.ylabel('diff. ln likelihood')
     plt.xlabel('box depth')
-    plt.plot(delta,diffLL,'b-',delta,target*np.ones(len(delta)),delta,diffLLY,'r--')
+    plt.plot(delta,diffLL,'b.',newDelta,diffLLY,'c-',delta,target*np.ones(len(delta)),'r')
+    plt.plot(intercepts[0],diffLLTest[0],'k.',intercepts[1],diffLLTest[1],'k.')
     
 
     f2=plt.figure(2)
+    boxLine=boxModel(t,mu,t[tstartIndex],t[tstartIndex+widthPoints],intercepts[0])
+    boxLine2=boxModel(t,mu,t[tstartIndex],t[tstartIndex+widthPoints],intercepts[1])
     plt.title('Brightness v. Time')
     plt.ylabel('brightness')
     plt.xlabel('time')
-    plt.plot(t,brightness,'k.')
+    plt.errorbar(t,brightness, yerr=sigmas, xerr=None,fmt='none')
+    plt.plot(t,brightness,'k.',t,boxLine,'r',t,boxLine2,'r')
     plt.show()
     
 
