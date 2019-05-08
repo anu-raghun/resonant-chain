@@ -55,57 +55,125 @@ def parabolic_roots(a,b,c,target):
 def main():
     
     np.random.seed(0)
-    npoints=101;
+    npoints=3000;
     mu=1.0; timeEnd=10;
     sigma= 3*(10**(-4))
     
     (t,brightness,randNoise)=makeNullData(mu,sigma,npoints,timeEnd)
     sigmas=sigma*np.ones(len(brightness))
     tstartIndex=4
-    widthPoints=10
-    brightness=brightness+randNoise
-    
     delta=np.linspace(-0.1,0.1,1000)
-    diffLL=computeDeltaLLPerDepth(delta,t,mu,brightness,sigmas,tstartIndex,widthPoints)
 
-    (a,b,c)=calc_parabola_vertex(delta[5], diffLL[5], delta[6], diffLL[6], delta[4], diffLL[4])
-    target=12.5
-    print(a,b,c)
-    intercepts=parabolic_roots(a,b,c,target)
+    widthPoints=150
+    brightness=brightness+randNoise
+#    diffLLTest=computeDeltaLLPerDepth(intercepts,t,mu,brightness,sigmas,tstartIndex,widthPoints)
 
-    diffLLTest=computeDeltaLLPerDepth(intercepts,t,mu,brightness,sigmas,tstartIndex,widthPoints)
-    print(intercepts)
-    print(diffLLTest)
+#    widthPoints=[3,10,30,100,300]
+#
+#    logDepth=np.zeros(len(widthPoints))
+#    logN=np.zeros(len(widthPoints))
+#    prediction=np.zeros(len(widthPoints))
+#    logPrediction=np.zeros(len(widthPoints))
+#
+#
+#    for i in range(len(widthPoints)):
+#        currentWidth=widthPoints[i]
+#        diffLL=computeDeltaLLPerDepth(delta,t,mu,brightness,sigmas,tstartIndex,currentWidth)
+#        (a,b,c)=calc_parabola_vertex(delta[5], diffLL[5], delta[6], diffLL[6], delta[4], diffLL[4])
+#        target=12.5
+#        intercepts=parabolic_roots(a,b,c,target)
+#        
+#        rootVar=np.mean(sigmas)
+#        prediction[i]=(5*rootVar)/(np.sqrt(currentWidth))
+#        logDepth[i]=intercepts[0]
+#        logN[i]=currentWidth
+#        logPrediction[i]=np.log(5*rootVar)-(0.5*np.log(currentWidth))
+#    
+#    f1=plt.figure(1)
+#    plt.title('depth of box vs. width of box')
+#    plt.ylabel('depth')
+#    plt.xlabel('width')
+#    plt.plot(logN,logDepth,'k.',logN,prediction,'b')
+#    logN=np.log(logN)
+#    logDepth=np.log(logDepth)
+#    
     
-    newDelta=np.linspace(-0.1,0.1,100000)
-    diffLLY=np.ones(len(newDelta))
-    for i in range(len(newDelta)):
-        foo=newDelta[i]
-        diffLLY[i]=a*(foo**2)+b*foo+c 
-    
-    
+#    f2=plt.figure(2)
+#    plt.title('ln(depth of box) vs. ln(width of box)')
+#    plt.ylabel('ln depth')
+#    plt.xlabel('ln width')
+#    plt.plot(logN,logDepth,'k.',logN,logPrediction,'b')
+#
+#    
+#    
     f1=plt.figure(1)
-    axes = plt.gca()
-    axes.set_ylim([-1.0,16.0])
-    plt.title('Delta Ln Likelihood vs. Depth of Box')
-    plt.ylabel('diff. ln likelihood')
-    plt.xlabel('box depth')
-    plt.plot(delta,diffLL,'b.',newDelta,diffLLY,'c-',delta,target*np.ones(len(delta)),'r')
-    plt.plot(intercepts[0],diffLLTest[0],'k.',intercepts[1],diffLLTest[1],'k.')
-    
-
-    f2=plt.figure(2)
-    boxLine=boxModel(t,mu,t[tstartIndex],t[tstartIndex+widthPoints],intercepts[0])
-    boxLine2=boxModel(t,mu,t[tstartIndex],t[tstartIndex+widthPoints],intercepts[1])
     plt.title('Brightness v. Time')
     plt.ylabel('brightness')
     plt.xlabel('time')
-    plt.errorbar(t,brightness, yerr=sigmas, xerr=None,fmt='none')
-    plt.plot(t,brightness,'k.',t,boxLine,'r',t,boxLine2,'r')
-    plt.show()
+    plt.errorbar(t,brightness, yerr=sigmas, xerr=None,fmt='None')
+    plt.plot(t,brightness,'.k')
+    minIndex=np.argmax(brightness)
+    maxIndex=np.argmin(brightness)
+    
+    print(minIndex,maxIndex)
     
 
+    tstartPoints=[4,50,153,500,maxIndex,minIndex]
+    for i in (range(len(tstartPoints))):
+        currenttStart=tstartPoints[i]
+        diffLL=computeDeltaLLPerDepth(delta,t,mu,brightness,sigmas,currenttStart,widthPoints)
+        (a,b,c)=calc_parabola_vertex(delta[5], diffLL[5], delta[6], diffLL[6], delta[4], diffLL[4])
+        target=12.5
+
+        intercepts=parabolic_roots(a,b,c,target)
+        
+        boxLine=boxModel(t,mu,t[currenttStart],t[currenttStart+widthPoints],intercepts[0])
+        boxLine2=boxModel(t,mu,t[currenttStart],t[currenttStart+widthPoints],intercepts[1])        
+        
+        plt.plot(t,boxLine,t,boxLine2)
+
     plt.show()
+        
+        
+    
+
+#    
+#    
+#    
+#    newDelta=np.linspace(-0.1,0.1,100000)
+#    diffLLY=np.ones(len(newDelta))
+#    for i in range(len(newDelta)):
+#        foo=newDelta[i]
+#        diffLLY[i]=a*(foo**2)+b*foo+c 
+#    
+#    
+#    f1=plt.figure(1)
+#    axes = plt.gca()
+#    axes.set_ylim([-1.0,16.0])
+#    plt.title('Delta Ln Likelihood vs. Depth of Box')
+#    plt.ylabel('diff. ln likelihood')
+#    plt.xlabel('box depth')
+#    plt.plot(delta,diffLL,'b.',newDelta,diffLLY,'c-',delta,target*np.ones(len(delta)),'r')
+#
+#    plt.plot(intercepts[0],diffLLTest[0],'k.',intercepts[1],diffLLTest[1],'k.')
+    
+
+#    f2=plt.figure(2)
+#    rootVar=np.mean(sigmas)
+#    prediction=(5*rootVar)/(np.sqrt(widthPoints))
+#    print(intercepts,prediction)
+#
+#    boxLine=boxModel(t,mu,t[tstartIndex],t[tstartIndex+widthPoints],intercepts[0])
+#    boxLine2=boxModel(t,mu,t[tstartIndex],t[tstartIndex+widthPoints],intercepts[1])
+#    plt.title('Brightness v. Time')
+#    plt.ylabel('brightness')
+#    plt.xlabel('time')
+#    plt.errorbar(t,brightness, yerr=sigmas, xerr=None,fmt='none')
+#    plt.plot(t,brightness,'k.',t,boxLine,'r',t,boxLine2,'r')
+#    plt.show()
+#    
+#
+#    plt.show()
 
     
 
