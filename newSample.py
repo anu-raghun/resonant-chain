@@ -1,5 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.special import erf
+import cProfile
+import re
+cProfile.run('re.compile("foo|bar")')
+
 
 def calc_parabola_vertex(x1, y1, x2, y2, x3, y3):
     denom = (x1-x2) * (x1-x3) * (x2-x3)
@@ -55,7 +60,7 @@ def parabolic_roots(a,b,c,target):
 def main():
     
     np.random.seed(0)
-    npoints=3000;
+    npoints=100000;
     mu=1.0; timeEnd=10;
     sigma= 3*(10**(-4))
     
@@ -64,78 +69,81 @@ def main():
     tstartIndex=4
     delta=np.linspace(-0.1,0.1,1000)
 
-    widthPoints=150
     brightness=brightness+randNoise
 #    diffLLTest=computeDeltaLLPerDepth(intercepts,t,mu,brightness,sigmas,tstartIndex,widthPoints)
 
-#    widthPoints=[3,10,30,100,300]
+    widthPoints=[30]
+    tStartPoints=range(1,10000)
+    
+    f1=plt.figure(1)
+    logPrediction=np.zeros(len(widthPoints))
+    rootVar=np.mean(sigmas)
+    
+
+#'''a million independent light curves  
+#taking one light curve and trying a million different boxes: 
+#error function of the Gaussian right now: if you're looking for periodic signals, how much does it help you to know the period in advance? 
+#the statistics of box least squares if you're: 1/1000 - will be 3 sigma away from zero '''
+#    
+#'''never use loops--> map operator ,maps & reduces'''
+#''''1 through 5 sigma:  1/1000, 32% '''
+#'''make a light curve with 100,000 points, width of 30 data points, order of how many over t
+#even the positive direction 
+    
+#do a little work on removing for loops from numpy expressions
+#pickle format for data: look up
+#if you write out a pickle file out of the loop
+#plotting operations outside 
+#c profile: object construction? 
+#make 100,000 point data set, going up by factors of \sqrt{10}'''
+    i=0
+    j=0
+    while i in range(len(widthPoints)):
+        currentWidth=widthPoints[i]
+        logPrediction[i]=np.log(5*rootVar)-(0.5*np.log(currentWidth))
+        while j in range(len(tStartPoints)):
+            tCurrent=tStartPoints[j]
+            diffLL=computeDeltaLLPerDepth(delta,t,mu,brightness,sigmas,tCurrent,currentWidth)
+            (a,b,c)=calc_parabola_vertex(delta[5], diffLL[5], delta[6], diffLL[6], delta[4], diffLL[4])
+            target=12.5
+            intercepts=parabolic_roots(a,b,c,target)
+            
+            logDepth=np.log(intercepts[0])
+            logN=np.log(currentWidth)
+            plt.plot(logN,logDepth,'.k')
+        i=i+1
+        j=j+1
+            
+    
+    
+    logNs=np.log(widthPoints)
+    plt.plot(logNs,logPrediction,'b')
+    plt.title('ln(depth) vs. ln(box width)')
+    plt.ylabel('ln(depth)')
+    plt.xlabel('ln(box width)')
+    plt.show()
+    
+#    plt.rcParams['agg.path.chunksize'] = 10000
+#    y = (1/2)*(1+erf((brightness-mu)/(sigma*np.sqrt(2))));
 #
-#    logDepth=np.zeros(len(widthPoints))
-#    logN=np.zeros(len(widthPoints))
-#    prediction=np.zeros(len(widthPoints))
-#    logPrediction=np.zeros(len(widthPoints))
 #
-#
-#    for i in range(len(widthPoints)):
-#        currentWidth=widthPoints[i]
-#        diffLL=computeDeltaLLPerDepth(delta,t,mu,brightness,sigmas,tstartIndex,currentWidth)
-#        (a,b,c)=calc_parabola_vertex(delta[5], diffLL[5], delta[6], diffLL[6], delta[4], diffLL[4])
-#        target=12.5
-#        intercepts=parabolic_roots(a,b,c,target)
-#        
-#        rootVar=np.mean(sigmas)
-#        prediction[i]=(5*rootVar)/(np.sqrt(currentWidth))
-#        logDepth[i]=intercepts[0]
-#        logN[i]=currentWidth
-#        logPrediction[i]=np.log(5*rootVar)-(0.5*np.log(currentWidth))
+#    f3=plt.figure(2)
+#    plt.plot(brightness,y)
+#    plt.xlabel('Brightness')
+#    plt.ylabel('CDF')
+
 #    
 #    f1=plt.figure(1)
-#    plt.title('depth of box vs. width of box')
-#    plt.ylabel('depth')
-#    plt.xlabel('width')
-#    plt.plot(logN,logDepth,'k.',logN,prediction,'b')
-#    logN=np.log(logN)
-#    logDepth=np.log(logDepth)
-#    
-    
-#    f2=plt.figure(2)
-#    plt.title('ln(depth of box) vs. ln(width of box)')
-#    plt.ylabel('ln depth')
-#    plt.xlabel('ln width')
-#    plt.plot(logN,logDepth,'k.',logN,logPrediction,'b')
+#    plt.title('Brightness v. Time')
+#    plt.ylabel('brightness')
+#    plt.xlabel('time')
+#    plt.errorbar(t,brightness, yerr=sigmas, xerr=None,fmt='None')
+#    plt.plot(t,brightness,'.k')
+#    minIndex=np.argmax(brightness)
+#    maxIndex=np.argmin(brightness)    
+#
 #
 #    
-#    
-    f1=plt.figure(1)
-    plt.title('Brightness v. Time')
-    plt.ylabel('brightness')
-    plt.xlabel('time')
-    plt.errorbar(t,brightness, yerr=sigmas, xerr=None,fmt='None')
-    plt.plot(t,brightness,'.k')
-    minIndex=np.argmax(brightness)
-    maxIndex=np.argmin(brightness)
-    
-    print(minIndex,maxIndex)
-    
-
-    tstartPoints=[4,50,153,500,maxIndex,minIndex]
-    for i in (range(len(tstartPoints))):
-        currenttStart=tstartPoints[i]
-        diffLL=computeDeltaLLPerDepth(delta,t,mu,brightness,sigmas,currenttStart,widthPoints)
-        (a,b,c)=calc_parabola_vertex(delta[5], diffLL[5], delta[6], diffLL[6], delta[4], diffLL[4])
-        target=12.5
-
-        intercepts=parabolic_roots(a,b,c,target)
-        
-        boxLine=boxModel(t,mu,t[currenttStart],t[currenttStart+widthPoints],intercepts[0])
-        boxLine2=boxModel(t,mu,t[currenttStart],t[currenttStart+widthPoints],intercepts[1])        
-        
-        plt.plot(t,boxLine,t,boxLine2)
-
-    plt.show()
-        
-        
-    
 
 #    
 #    
