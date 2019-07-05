@@ -28,7 +28,6 @@ def makeOneTransitData(mu,sd,nPoints,timeEnd):
     randNoise = np.random.normal(0,sd,nPoints)
     return(t,brightness,randNoise)
 
-
 def computeDeltaLLPerDepth(delta,t,mu,brightness,noise,startIndex,period):
     diffLL=np.zeros(len(delta))
     for i in range(len(delta)):
@@ -41,13 +40,11 @@ def computeDeltaLLPerDepth(delta,t,mu,brightness,noise,startIndex,period):
     return diffLL
 
 def computeDeltaLL(delta,t,mu,brightness,noise,startIndex,period):
-    diffLL=0 
-    ll=0
+    diffLL=0
     for j in range(startIndex,startIndex+period):
         temp=(brightness[j]-mu+delta)**2-(brightness[j]-mu)**2
         temp=temp/(2*noise[j]**2)
-        ll+=temp
-    diffLL=ll
+        diffLL+=temp
     return diffLL
     
 
@@ -112,12 +109,12 @@ def nullMain():
     fig, ax = plt.subplots()
     plt.hist(diffLL3, num_bins, density=True, facecolor='blue', alpha=0.3)
 #    plt.hist(diffLL2, num_bins, density=True, facecolor='orange', alpha=0.3, label='$\Delta=0.05$')
-#    plt.hist(diffLL3, num_bins, density=True, facecolor='green', alpha=0.3, label='$\Delta=0.1$')
+#    plt.hist(diffLL1, num_bins, density=True, facecolor='green', alpha=0.3, label='$\Delta=0.1$')
 
     plt.xlabel('Delta Ln Like')
     plt.title(r'Histogram of Delta Ln Like: $\tau=30$, $\Delta=0.1$')
     
-    # Tweak spacing to prevent clipping of ylabel
+    #prevent clipping of ylabel
     plt.subplots_adjust(left=0.15)
     plt.show()
     
