@@ -39,6 +39,7 @@ def computeDeltaLLPerDepth(delta,t,mu,brightness,noise,startIndex,period):
 def computeDeltaLL(delta,t,mu,brightness,noise,startIndex,period):
     # JJ = np.arange(startIndex, startIndex+period)
     # return (brightness[JJ] - mu + delta) ....
+    
     JJ=np.arange(startIndex,startIndex+period)
     temp=(brightness[JJ]-mu+delta)**2-(brightness[JJ]-mu)**2
     temp=temp/(2*noise[JJ]**2)
@@ -79,40 +80,58 @@ def runningDiffLnLikeFixedDepth(tStartPoints,delta,t,mu,brightness,sigmas,widthP
 
 def nullMain():
     np.random.seed(0)
-    npoints=100000;
+    npoints=10;
     mu=1.0; timeEnd=10;
     sigma= 3*(10**(-4))
     
     (t,brightness,randNoise)=makeNullData(mu,sigma,npoints,timeEnd)
     sigmas=sigma*np.ones(len(brightness))
-#    tstartIndex=4
-#    delta=np.linspace(-0.1,0.1,1000)
 
     brightness=brightness+randNoise
-#    diffLLTest=computeDeltaLLPerDepth(intercepts,t,mu,brightness,sigmas,tstartIndex,widthPoints)
-
-    widthPoints=30
-    tStartPoints=range(1,10000)
-
-#    rootVar=np.mean(sigmas)
-    diffLL1=runningDiffLnLikeFixedDepth(tStartPoints,0.01,t,mu,brightness,sigmas,widthPoints)
-    diffLL2=runningDiffLnLikeFixedDepth(tStartPoints,0.05,t,mu,brightness,sigmas,widthPoints)
-    diffLL3=runningDiffLnLikeFixedDepth(tStartPoints,0.1,t,mu,brightness,sigmas,widthPoints)
-
-    num_bins = 100
-    # the histogram of the data
     
-    fig, ax = plt.subplots()
-    plt.hist(diffLL3, num_bins, density=True, facecolor='blue', alpha=0.3)
-#    plt.hist(diffLL2, num_bins, density=True, facecolor='orange', alpha=0.3, label='$\Delta=0.05$')
-#    plt.hist(diffLL1, num_bins, density=True, facecolor='green', alpha=0.3, label='$\Delta=0.1$')
+    widthPoints=3
+    tStartPoints=range(1,6)
+    deltaCurrent=0.01
 
-    plt.xlabel('Delta Ln Like')
-    plt.title(r'Histogram of Delta Ln Like: $\tau=30$, $\Delta=0.1$')
+    diffLL1=runningDiffLnLikeFixedDepth(tStartPoints,deltaCurrent,t,mu,brightness,sigmas,widthPoints)
+    diffLL2=runningDiffLnLikeFixedDepth(tStartPoints,-deltaCurrent,t,mu,brightness,sigmas,widthPoints)
+#    diffLL3=runningDiffLnLikeFixedDepth(tStartPoints,0.1,t,mu,brightness,sigmas,widthPoints)
+    print(diffLL1)
+    
+# UNCOMMENT WHEN YOU WANT HISTOGRAMS
+#    num_bins = 50
+#    # the histogram of the data
+#    
+#    fig, ax = plt.subplots()
+##    plt.hist(diffLL3, num_bins, density=True, facecolor='blue', alpha=0.3)
+##    plt.hist(diffLL2, num_bins, density=True, facecolor='orange', alpha=0.3, label='$\Delta=-0.01$')
+#    plt.hist(diffLL1, num_bins, density=True, facecolor='green', alpha=0.3, label='$\Delta=0.01$')
+#
+#    plt.xlabel('Delta Ln Like')
+#    plt.title(r'Histogram of Delta Ln Like: $\tau=3$, $\Delta=0.01$')
+#    plt.subplots_adjust(left=0.15)
+#    plt.show()
+    f1=plt.figure(1)
+    plt.plot(tStartPoints,diffLL1,'.k')
+    plt.title('Diff. Ln Likelihood Value vs. Box Start Points (10 points)')
+    
+    f2=plt.figure(2)
+    plt.plot(t,brightness)
+    tstartIndex=tStartPoints[0]
+    boxLine=boxModel(t,mu,t[tstartIndex],t[tstartIndex+widthPoints],deltaCurrent)
+    boxLine2=boxModel(t,mu,t[tstartIndex],t[tstartIndex+widthPoints],-0.01)
+    plt.plot(t,boxLine,'r',t,boxLine2,'r')
+    
+
+    plt.title('Brightness v. Time')
+    plt.ylabel('brightness')
+    plt.xlabel('time')
+    plt.errorbar(t,brightness,yerr=sigmas, xerr=None,fmt='none')
+    plt.plot(t,brightness,'k.')
+    plt.show()
     
     #prevent clipping of ylabel
-    plt.subplots_adjust(left=0.15)
-    plt.show()
+    
     
 
 def oneTransitMain():
