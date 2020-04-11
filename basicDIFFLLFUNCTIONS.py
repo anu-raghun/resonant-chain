@@ -1,5 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import stats
+
+
 
 def calc_parabola_vertex(x1, y1, x2, y2, x3, y3):
     denom = (x1-x2) * (x1-x3) * (x2-x3)
@@ -56,59 +59,31 @@ def runningDiffLnLikeFixedDepth(tStartPoints,depth,mu,brightness,sigmas,widthPoi
         fixedWidthFixedDeltaLL[i]=computeDeltaLL(depth,mu,brightness,sigmas,tStartPoints[i],widthPoints)
         i=i+1
     return fixedWidthFixedDeltaLL
-    
 
-def nullMain():
-    np.random.seed(0)
-    npoints=10;
-    mu=1.0; timeEnd=10;
-    sigma= 2*(10**(-12))
+def makeSubplotsWithNullData(m,n,xLabel,yLabel,title,t,brightness,sigmas):
+    fig, a =  plt.subplots(2,2)
+    fig.text(0.5, 0.04, xLabel, ha='center', va='center')
+    fig.text(0.06, 0.5, yLabel, ha='center', va='center', rotation='vertical')
+    fig.suptitle(title)
+    for j in range(n):
+        for i in range(m):      
+            a[i][j].errorbar(t,brightness, yerr=sigmas,fmt='ko',markersize=0.7,ecolor='blue')
+    return fig, a
     
-    (t,brightness)=makeNullData(mu,sigma,npoints,timeEnd)
-    sigmas=sigma*np.ones(len(brightness))
-    
-    duration=3
-    tStartPoint=1
-    depth=(2**(-12))
+def fillSubplots(fig,a,m,n,t,brightness,sigmas,depth,tStartPoint,duration,mu):
+    for j in range(n-1):
+        for i in range(m-1):
+            a[i][j].plot(boxModel(t,mu,tStartPoint,tStartPoint+duration,depth),'y')
 
-#    diffLL1=runningDiffLnLikeFixedDepth(tStartPoints,depthCurrent,mu,brightness,sigmas,widthPoints)
-    diffLL1=computeDeltaLL(depth,mu,brightness,sigmas,tStartPoint,duration)
-    diffLL2=computeDeltaLL(-depth,mu,brightness,sigmas,tStartPoint,duration)
-#    diffLL3=runningDiffLnLikeFixedDepth(tStartPoints,0.1,t,mu,brightness,sigmas,widthPoints)
-    print(diffLL1,diffLL2)
-    
-# UNCOMMENT WHEN YOU WANT HISTOGRAMS
-#    num_bins = 50
-#    # the histogram of the data
-#    
-#    fig, ax = plt.subplots()
-##    plt.hist(diffLL3, num_bins, density=True, facecolor='blue', alpha=0.3)
-##    plt.hist(diffLL2, num_bins, density=True, facecolor='orange', alpha=0.3, label='$\depth=-0.01$')
-#    plt.hist(diffLL1, num_bins, density=True, facecolor='green', alpha=0.3, label='$\depth=0.01$')
-#
-#    plt.xlabel('Delta Ln Like')
-#    plt.title(r'Histogram of Delta Ln Like: $\tau=3$, $\depth=0.01$')
-#    plt.subplots_adjust(left=0.15)
-#    plt.show()
-    
-    f2=plt.figure(2)
-    plt.plot(t,brightness)
-    tstartIndex=tStartPoint
-    boxLine=boxModel(t,mu,t[tstartIndex],t[tstartIndex+duration],depth)
-    boxLine2=boxModel(t,mu,t[tstartIndex],t[tstartIndex+duration],-depth)
-    plt.step(t,boxLine,color='r',where='mid')
-    plt.step(t,boxLine2,color='r',where='mid')
-    
 
-    plt.title('Brightness v. Time')
+def drawBasicBrightnessPlot(t,brightness,uncertaintyPerPoint):
+    plt.errorbar(t,brightness, yerr=uncertaintyPerPoint,fmt='ko',markersize=0.7,ecolor='blue')
     plt.ylabel('brightness')
     plt.xlabel('time')
-    plt.errorbar(t,brightness,yerr=sigmas, xerr=None,fmt='none')
-    plt.plot(t,brightness,'k.')
-    plt.show()
     
-    #prevent clipping of ylabel
- 
+def drawBasicBrightnessSubplot(t,brightness,uncertaintyPerPoint,subplot):
+    subplot.errorbar(t,brightness, yerr=uncertaintyPerPoint,fmt='ko',markersize=0.7,ecolor='blue')
+    subplot.set(xlabel='time', ylabel='brightness')
     
-nullMain()
-#oneTransitMain()
+#def sweepThroughChangingStartPoints():
+
