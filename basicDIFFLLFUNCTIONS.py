@@ -60,15 +60,15 @@ def runningDiffLnLikeFixedDepth(tStartPoints,depth,mu,brightness,sigmas,widthPoi
         i=i+1
     return fixedWidthFixedDeltaLL
 
-def makeSubplotsWithNullData(m,n,xLabel,yLabel,title,t,brightness,sigmas):
-    fig, a =  plt.subplots(2,2)
-    fig.text(0.5, 0.04, xLabel, ha='center', va='center')
-    fig.text(0.06, 0.5, yLabel, ha='center', va='center', rotation='vertical')
-    fig.suptitle(title)
-    for j in range(n):
-        for i in range(m):      
-            a[i][j].errorbar(t,brightness, yerr=sigmas,fmt='ko',markersize=0.7,ecolor='blue')
-    return fig, a
+#def makeSubplotsWithNullData(m,n,xLabel,yLabel,title,t,brightness,sigmas):
+#    fig, a =  plt.subplots(2,2)
+#    fig.text(0.5, 0.04, xLabel, ha='center', va='center')
+#    fig.text(0.06, 0.5, yLabel, ha='center', va='center', rotation='vertical')
+#    fig.suptitle(title)
+#    for j in range(n):
+#        for i in range(m):      
+#            a[i][j].errorbar(t,brightness, yerr=sigmas,fmt='ko',markersize=0.7,ecolor='blue')
+#    return fig, a
     
 def fillSubplots(fig,a,m,n,t,brightness,sigmas,depth,tStartPoint,duration,mu):
     for j in range(n-1):
