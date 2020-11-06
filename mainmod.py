@@ -3,12 +3,13 @@ import basicPeriodicFunctions as bf
 import numpy as np
 import matplotlib.pyplot as plt
 import periodicTestRunsMod as ptestmod
-#from scipy import stats
+from scipy import stats
 #import scipy as sp
-import time
 from scipy.special import erfcinv
 import pickle
 import astropy.timeseries
+import pandas as pd
+import time
 
 
 
@@ -133,14 +134,22 @@ def overlayVerticalLines():
 
     for period in periods:
         plt.axvline(period, linewidth=1, alpha= 0.2)
-        plt.text(x=period, y=(np.random.rand()+0.25)*0.0002, s=str('%.2f' % integerMultiples[i]), alpha=0.7, rotation=30, color='#334f8d')       
+        plt.text(x=period, y=(np.random.rand()+0.05)*0.000125, s=str('%.2f' % integerMultiples[i]), alpha=0.7, rotation=30, color='#334f8d')       
         i+=1
+        
     plt.axvline((1/np.e)*samplePeriod, linewidth=1, alpha= 0.2, color='r')
     plt.text(x=(1/np.e)*samplePeriod, y=0.00012, s=str('1/e'), alpha=0.7, color='r')
     plt.axvline((1/np.pi)*samplePeriod, linewidth=1, alpha= 0.2, color='r')
     plt.text(x=(1/np.pi)*samplePeriod, y=0.00012, s=str('1/pi'), alpha=0.7, color='r')
     plt.axvline((1./np.sqrt(2))*samplePeriod, linewidth=1, alpha= 0.2, color='r')
-    plt.text(x=(1./np.sqrt(2))*samplePeriod, y=0.00012, s=str('1/pi'), alpha=0.7, color='r')
+    plt.text(x=(1./np.sqrt(2))*samplePeriod, y=0.00012, s=str('1/$\sqrt{2}$'), alpha=0.7, color='r')
+
+    plt.axvline((np.e)*samplePeriod, linewidth=1, alpha= 0.2, color='r')
+    plt.text(x=(np.e)*samplePeriod, y=0.00012, s=str('e'), alpha=0.7, color='r')
+    plt.axvline((np.pi)*samplePeriod, linewidth=1, alpha= 0.2, color='r')
+    plt.text(x=(np.pi)*samplePeriod, y=0.00012, s=str('pi'), alpha=0.7, color='r')
+    plt.axvline((np.sqrt(2))*samplePeriod, linewidth=1, alpha= 0.2, color='r')
+    plt.text(x=(np.sqrt(2))*samplePeriod, y=0.00012, s=str('$\sqrt{2}$'), alpha=0.7, color='r')
 
 def get_all_pairs(nmax):
   """
@@ -158,38 +167,38 @@ def traverse(pairs, nmax, m, n):
     traverse(pairs, nmax, 2 * m + n, m)
     traverse(pairs, nmax, m + 2 * n, n)        
     
-def analyzeData():    
-    file = open('depthasfunctionofperiod', 'rb')
-    depthsPerPeriod = pickle.load(file)
-    file.close()
+def analyzeData(fineRESULTS,fineNULLRESULTS,fineNEGATIVERESULTS):    
+    # file = open('depthasfunctionofperiod', 'rb')
+    # depthsPerPeriod = pickle.load(file)
+    # file.close()
 
-    file = open('depthasfunctionofperiodNULL', 'rb')
-    depthsPerPeriodNull = pickle.load(file)
-    file.close()
+    # file = open('depthasfunctionofperiodNULL', 'rb')
+    # depthsPerPeriodNull = pickle.load(file)
+    # file.close()
 
 
-#    plt.plot(periods,depthsPerPeriod[:,0],'ko',label='custom depth function- periodic data -max depth')
-#    plt.plot(periods,depthsPerPeriod[:,1],'bo',label='custom depth function- periodic data -min depth')
-#    
-#    plt.plot(periods,depthsPerPeriodNull[:,0],'kv',label='custom depth function- null data- max depth')
-#    plt.plot(periods,depthsPerPeriodNull[:,1],'bv',label='custom depth function- null data- min depth')
+    # plt.plot(periods,depthsPerPeriod[:,0],'ko',label='custom depth function- periodic data -max depth')
+    # plt.plot(periods,depthsPerPeriod[:,1],'bo',label='custom depth function- periodic data -min depth')
+    
+    # plt.plot(periods,depthsPerPeriodNull[:,0],'kv',label='custom depth function- null data- max depth')
+    # plt.plot(periods,depthsPerPeriodNull[:,1],'bv',label='custom depth function- null data- min depth')
 
     plt.xlabel('period')
     plt.semilogx()
     plt.ylabel('depths')
-    plt.title('optimal depth as a function of period. Positive injection. Fiducial Period = 1/2 injection period. Non-custom depth function used is astropy.model.power, \'fast\'')
+    plt.title('optimal depth as a function of period. Positive injection. Fiducial Period = 1/2 injection period.')
     expectation=returnExpectation(finePeriods)
     
-    plt.axhline(fineNULLRESULTS.depth.max(),label='max depth output from null data',alpha=0.2,color='red')
-    [upper,lower]=returnBoundsOnData(fineRESULTS.depth,fineNULLRESULTS.depth,10,1,expectation)
-    print('bound coefficients: ',upper,lower)
+    # plt.axhline(fineNULLRESULTS.depth.max(),label='max depth output from null data',alpha=0.2,color='red')
+    # [upper,lower]=returnBoundsOnData(fineRESULTS.depth,fineNULLRESULTS.depth,10,1,expectation)
+    # print('bound coefficients: ',upper,lower)
     
-    plt.plot(finePeriods,lower*expectation,'-',color="black",label='lower bound on positive expectation',alpha=0.5,)
-    plt.plot(finePeriods,upper*expectation,'-',color="black",label='upper bound on positive expectation',alpha=1,)
+    plt.plot(finePeriods,0.8*expectation,'-',color="black",label='lower bound on positive expectation',alpha=0.5,)
+    plt.plot(finePeriods,2*expectation,'-',color="black",label='upper bound on positive expectation',alpha=1,)
 
-    [upperNEGATIVE,lowerNEGATIVE]=returnBoundsOnData(fineNEGATIVERESULTS.depth,-1*fineNEGATIVERESULTS.depth,10,-2,expectation)
-    plt.plot(finePeriods,-1*lower*expectation,'-',color="green",label='upper bound on negative expectation',alpha=0.5,)
-    print('negative bound coefficients: ', lowerNEGATIVE)
+    # [upperNEGATIVE,lowerNEGATIVE]=returnBoundsOnData(fineNEGATIVERESULTS.depth,-1*fineNEGATIVERESULTS.depth,10,-2,expectation)
+    plt.plot(finePeriods,-0.8*expectation,'-',color="green",label='upper bound on negative expectation',alpha=0.5,)
+    # print('negative bound coefficients: ', lowerNEGATIVE)
 
     overlayVerticalLines()
     plt.legend()
@@ -199,13 +208,7 @@ def analyzeData():
     plt.plot(finePeriods,fineNULLRESULTS.depth/expectation,'--',label='finely gridded periods, run on null data',alpha=0.5)
     plt.plot(finePeriods,-1* fineNEGATIVERESULTS.depth/expectation,'--',label='finely gridded periods, run on negative data',alpha=0.5)
 
-def returnBoundsOnData(upperLimit,lowerLimit,upperGuess,lowerGuess,model):
-    if np.all([upperGuess*model>upperLimit,lowerGuess*model>lowerLimit]):
-        return [upperGuess,lowerGuess]
-    else: 
-        upperGuess+=0.001; lowerGuess+=0.001
-        return returnBoundsOnData(upperLimit,lowerLimit,upperGuess,lowerGuess,model)
-    
+
 def returnExpectation(periods):
     return (np.sqrt((2*(randomNoiseSigma**2)*periods*delta)/(halfDuration*trange[1]))*erfcinv(2*halfDuration/periods))
     
@@ -322,20 +325,113 @@ def openPickles():
     file.close()
     return [results,resultsNULL,resultsNEGATIVE,fineNULLRESULTS,fineRESULTS,fineNEGATIVERESULTS]
 
-#runTestsAndPickle()
-#depthASFUNCTIONOFPERIOD()
-[results,resultsNULL,resultsNEGATIVE,fineNULLRESULTS,fineRESULTS,fineNEGATIVERESULTS]=openPickles()
+
+def comparingNull_Negative_Periodic_thresholds():
+    # runTestsAndPickle()
+    # depthASFUNCTIONOFPERIOD()
+    [results,resultsNULL,resultsNEGATIVE,fineNULLRESULTS,fineRESULTS,fineNEGATIVERESULTS]=openPickles()
+    
+    
+    plt.plot(periods,results.depth,'o',label='discrete integer multiple periods tested on periodic data')
+    plt.plot(periods,resultsNULL.depth,'v',label='discrete integer multiple periods tested on NULL data')
+    plt.plot(periods,-1*resultsNEGATIVE.depth,'x',label='discrete integer multiple periods tested on negative data')
+    
+    
+    plt.plot(finePeriods,fineRESULTS.depth,'--',label='finely gridded periods, run on periodic data',alpha=0.5)
+    plt.plot(finePeriods,fineNULLRESULTS.depth,'--',label='finely gridded periods, run on null data',alpha=0.5)
+    plt.plot(finePeriods,-1* fineNEGATIVERESULTS.depth,'--',label='finely gridded periods, run on negative data',alpha=0.5)
+    
+    print(integerMultiples.shape)
+    analyzeData(fineRESULTS,fineNULLRESULTS,fineNEGATIVERESULTS)
 
 
-plt.plot(periods,results.depth,'o',label='discrete integer multiple periods tested on periodic data')
-plt.plot(periods,resultsNULL.depth,'v',label='discrete integer multiple periods tested on NULL data')
-plt.plot(periods,-1*resultsNEGATIVE.depth,'x',label='discrete integer multiple periods tested on negative data')
+def generateNULLDataFrame(no_Trials):
+    nullDATA=np.zeros([no_Trials,len(t)])
+    for i in np.arange(0,no_Trials):
+        NULLbrightness_temp=bf.makeNullData(mu,randomNoiseSigma,len(t))
+        nullDATA[i,:]=NULLbrightness_temp
+    print(nullDATA) 
+    file = open('nullDATA', 'wb')
+    pickle.dump(nullDATA, file)
+    file.close()
+
+def openPickle(name):
+    file = open(name, 'rb')
+    df = pickle.load(file)
+    file.close()
+    return df
+
+def calculateFinePeriodsPer(nullARRAY):
+    depthResultsFINE=np.ones([len(nullARRAY),len(finePeriods)])
+    i=0
+    for nullArray in nullARRAY:
+        modelNULL_temp = astropy.timeseries.BoxLeastSquares(t, nullArray)   
+        resultsFINE_temp = modelNULL_temp.power(finePeriods,halfDuration,method='fast',oversample=3)
+        depthResultsFINE[i,:]=resultsFINE_temp.depth
+        i+=1
+    file = open('depthResultsFINE', 'wb')
+    pickle.dump(depthResultsFINE, file)
+    file.close()
+    
+    return depthResultsFINE
+
+def returnBounds(guess,expectation,depths):
+    count_vals = sum(np.greater(depths,guess*expectation))
+    percentile_val = 100 * (count_vals/len(depths))
+    while (percentile_val >=6):
+        guess+=0.005
+        count_vals = sum(np.greater(depths,guess*expectation))
+        percentile_val = 100 * (count_vals/len(depths))
+    print(percentile_val,guess)
+    return percentile_val,guess
+        
+        
+def plotDataAndAnalyzeThresholds(nullTRIALS_DISCRETE):
+    expectation=returnExpectation(periods)
+    fig, axs = plt.subplots(2, 1)
+    plt.xlabel('period')
+    plt.semilogx()
+    plt.ylabel('depths')
+    plt.title('null trial no. 7')
+    axs[0].set_xscale('log')
+    axs[0].plot(periods,expectation,'-',alpha=1)
+
+    for i in np.arange(len(nullTRIALS_DISCRETE)):
+        discretePeriodDepths=nullTRIALS_DISCRETE[i]
+        axs[0].plot(periods,discretePeriodDepths,'.',alpha=0.5)
+        (percentile_val,guess)=returnBounds(1,expectation,discretePeriodDepths)
+        axs[0].plot(periods,guess*expectation,'-',label='upper bound on expectation for index '+str(i),alpha=1)        
+    axs[1].plot(periods,nullTRIALS_DISCRETE[7],'.',alpha=0.5)
+    axs[1].plot(periods,expectation,'-',label='expectation',alpha=1)
+    
+    guess=1
+    count_vals = sum(np.greater(nullTRIALS_DISCRETE[7],guess*expectation))
+    percentile_val = 100 * (count_vals/len(nullTRIALS_DISCRETE[7]))
+    print(percentile_val)
+    while (percentile_val >=6):
+        guess+=0.005
+        count_vals = sum(np.greater(nullTRIALS_DISCRETE[7],guess*expectation))
+        percentile_val = 100 * (count_vals/len(nullTRIALS_DISCRETE[7]))
+    axs[1].plot(periods,guess*expectation,'-',label='upper bound on expectation- no more than 5% false positive rate, coefficient:'+str(guess),alpha=1)
+
+    plt.legend()
+
+    
+    plt.show()
 
 
-plt.plot(finePeriods,fineRESULTS.depth,'--',label='finely gridded periods, run on periodic data',alpha=0.5)
-plt.plot(finePeriods,fineNULLRESULTS.depth,'--',label='finely gridded periods, run on null data',alpha=0.5)
-plt.plot(finePeriods,-1* fineNEGATIVERESULTS.depth,'--',label='finely gridded periods, run on negative data',alpha=0.5)
+def thresholdREFINE():
+    # nullDATA=openPickle('nullDATA')
+    nullTRIALS_DISCRETE=openPickle('depthResultsDISCRETE')
+    print(nullTRIALS_DISCRETE)
+    # nullTRIALS_FINE=calculateFinePeriodsPer(nullDATA)
+    # nullTRIALS_FINE=openPickle('depthResultsFINE')
 
-print(integerMultiples.shape)
-analyzeData()
+    plotDataAndAnalyzeThresholds(nullTRIALS_DISCRETE)
+    # plotDataAndAnalyzeThresholds(nullTRIALS_FINE)
 
+comparingNull_Negative_Periodic_thresholds()   
+# start = time.time()
+# thresholdREFINE()
+# end = time.time()
+# print(end - start)

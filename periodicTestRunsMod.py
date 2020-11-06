@@ -206,7 +206,6 @@ def OffsetsPeriodsOffsetVarying(t,brightness,offsetPeriod,sigmas,halfDuration,mu
 ## how much more confident are you knowing the period of a planet. how about searching over period and offset vs just offset. 
 ## do a fine grid of offset.
     #do grids of different numbers of period and offsets.
-
 def fixedPeriodVaryingOffsetComparison(brightness,sigmas,period,halfDuration,t):
     offsets=np.linspace(0,period,num=4056)
     deltaLLs=np.zeros_like(offsets)
