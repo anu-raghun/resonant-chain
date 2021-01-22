@@ -18,7 +18,7 @@ np.random.seed(0)
 trange=[0,1000.7]; 
 #npoints=trange[1]*30
 npoints=50000
-mu=1.0; offsetPeriod=18.767; offset=13.2; transitDuration=0.0525;
+mu=1.0; offsetPeriod=18.767; offset=13.2; transitDuration=0.525;
 randomNoiseSigma= (10**(-4))
 halfDuration=transitDuration/2
 transitDepth=0.0002
@@ -210,7 +210,8 @@ def analyzeData(fineRESULTS,fineNULLRESULTS,fineNEGATIVERESULTS):
 
 
 def returnExpectation(periods):
-    return (np.sqrt((2*(randomNoiseSigma**2)*periods*delta)/(halfDuration*trange[1]))*erfcinv(2*halfDuration/periods))
+    return np.sqrt((2*(randomNoiseSigma**2)*periods*delta)/(halfDuration*trange[1]))*erfcinv(0.1*halfDuration/periods)
+
     
 samplePeriod=1/2*offsetPeriod
 foo = get_all_pairs(7)
@@ -223,29 +224,6 @@ depthsPerPeriod=np.outer(np.ones(len(periods)),np.zeros(2))
 depthsPerPeriodNull=np.ones_like(depthsPerPeriod)
 finePeriods=np.arange(np.min(periods),np.max(periods),3*10**(-4))
   
-#def downloadAndPickle():
-#    print 'Parsing '+os.path.split(csvDatabaseName)[1]+', the CSV database from exoplanets.org...'
-#    rawTable = open(csvDatabaseName).read().splitlines()
-#    labels = rawTable[0].split(',')
-#    exoplanetDB = {}
-#    planetNameColumn = np.arange(len(labels))[np.array(labels,dtype=str)=='NAME'][0]
-#    for row in range(1,len(rawTable)): 
-#        splitRow = rawTable[row].split(',')
-#        exoplanetDB[splitRow[planetNameColumn]] = {}	## Create dictionary for this row's planet
-#        for col in range(0,len(splitRow)):
-#            exoplanetDB[splitRow[planetNameColumn]][labels[col]] = splitRow[col]
-#        
-#        output = open(pklDatabaseName,'wb')
-#        cPickle.dump(exoplanetDB,output)
-#        output.close()
-#    else: 
-#        print 'Using previously parsed database from exoplanets.org...'
-#        inputFile = open(pklDatabaseName,'rb')
-#        exoplanetDB = cPickle.load(inputFile)
-#        inputFile.close()
-#    
-#    return exoplanetDB
-
 def runningAstropyModelFinePeriods(methodLabel):
     model = astropy.timeseries.BoxLeastSquares(t, brightness)
     results = model.power(finePeriods,halfDuration,method=methodLabel,oversample=3)
@@ -277,50 +255,56 @@ def runTestsAndPickle():
     modelNEGATIVE= astropy.timeseries.BoxLeastSquares(t, -1*brightness)
     modelNULL = astropy.timeseries.BoxLeastSquares(t, nullBrightness)   
     
-    results = model.power(periods,halfDuration,method='fast',oversample=3)
-    file = open('resultsFastPeriodicDiscrete', 'wb')
-    pickle.dump(results, file)
-    file.close()
-    results = modelNULL.power(periods,halfDuration,method='fast',oversample=3)
-    file = open('resultsFastNullDiscrete', 'wb')
-    pickle.dump(results, file)
-    file.close()
-    results = modelNEGATIVE.power(periods,halfDuration,method='fast',oversample=3)
-    file = open('resultsFastPeriodicDiscreteNEGATIVE', 'wb')
-    pickle.dump(results, file)
-    file.close()
+    # results = model.autopower(2*halfDuration,method='fast',oversample=3)
+    # file = open('resultsFastPeriodicDiscreteAUTOPOWER', 'wb')
+    # pickle.dump(results, file)
+    # file.close()
+    # results = modelNULL.autopower(2*halfDuration,method='fast',oversample=3)
+    # file = open('resultsFastNullDiscreteAUTOPOWER', 'wb')
+    # pickle.dump(results, file)
+    # file.close()
+    # results = modelNEGATIVE.autopower(2*halfDuration,method='fast',oversample=3)
+    # file = open('resultsFastPeriodicDiscreteNEGATIVEAUTOPOWER', 'wb')
+    # pickle.dump(results, file)
+    # file.close()
     
-    results=modelNULL.power(finePeriods,halfDuration,method='fast',oversample=3)
-    file = open('finePeriodsFastNull', 'wb')
-    pickle.dump(results, file)
-    file.close()
-    results = model.power(finePeriods,halfDuration,method='fast',oversample=3)
-    file = open('finePeriodsFastPeriodic', 'wb')
-    pickle.dump(results, file)
-    file.close()
-    results=modelNEGATIVE.power(finePeriods,halfDuration,method='fast',oversample=3)
-    file = open('finePeriodsFastNegative', 'wb')
-    pickle.dump(results, file)
-    file.close()
+#    results=modelNULL.autopower(2*halfDuration,method='fast',oversample=3,minimum_period=17,maximum_period=19)
+#    periods=modelNULL.autoperiod(2*halfDuration, minimum_period=17, maximum_period=19)
+#    file = open('autopowerNULL', 'wb')
+#    pickle.dump([results,periods], file)
+#    file.close()
+#    
+    periods=modelNULL.autoperiod(1, minimum_period=5, maximum_period=7)
+    file = open('testJAN11', 'wb')
+    pickle.dump(periods, file)
+
+    # results = model.autopower(2*halfDuration,method='fast',oversample=3)
+    # file = open('autopowerPeriodic', 'wb')
+    # pickle.dump(results, file)
+    # file.close()
+    # results=modelNEGATIVE.autopower(2*halfDuration,method='fast',oversample=3)
+    # file = open('autopowerNegative', 'wb')
+    # pickle.dump(results, file)
+    # file.close()
 
    
 def openPickles():
-    file = open('resultsFastPeriodicDiscrete', 'rb')
+    file = open('resultsFastPeriodicDiscreteAUTOPOWER', 'rb')
     results = pickle.load(file)
     file.close()
-    file = open('resultsFastNullDiscrete', 'rb')
+    file = open('resultsFastNullDiscreteAUTOPOWER', 'rb')
     resultsNULL = pickle.load(file)
     file.close()
-    file = open('resultsFastPeriodicDiscreteNEGATIVE', 'rb')
+    file = open('resultsFastPeriodicDiscreteNEGATIVEAUTOPOWER', 'rb')
     resultsNEGATIVE = pickle.load(file)
     file.close()
-    file = open('finePeriodsFastNull', 'rb')
+    file = open('finePeriodsFastNullAUTOPOWER', 'rb')
     fineNULLRESULTS = pickle.load(file)
     file.close()
-    file = open('finePeriodsFastPeriodic', 'rb')
+    file = open('finePeriodsFastPeriodicAUTOPOWER', 'rb')
     fineRESULTS = pickle.load(file)
     file.close()
-    file = open('finePeriodsFastNegative', 'rb')
+    file = open('finePeriodsFastNegativeAUTOPOWER', 'rb')
     fineNEGATIVERESULTS = pickle.load(file)
     file.close()
     return [results,resultsNULL,resultsNEGATIVE,fineNULLRESULTS,fineRESULTS,fineNEGATIVERESULTS]
@@ -362,16 +346,21 @@ def openPickle(name):
     return df
 
 def calculateFinePeriodsPer(nullARRAY):
+
     depthResultsFINE=np.ones([len(nullARRAY),len(finePeriods)])
     i=0
     for nullArray in nullARRAY:
+        start = time.time()
         modelNULL_temp = astropy.timeseries.BoxLeastSquares(t, nullArray)   
         resultsFINE_temp = modelNULL_temp.power(finePeriods,halfDuration,method='fast',oversample=3)
         depthResultsFINE[i,:]=resultsFINE_temp.depth
         i+=1
+        end = time.time()
+        print(start-end)
     file = open('depthResultsFINE', 'wb')
     pickle.dump(depthResultsFINE, file)
     file.close()
+
     
     return depthResultsFINE
 
@@ -422,16 +411,55 @@ def plotDataAndAnalyzeThresholds(nullTRIALS_DISCRETE):
 
 def thresholdREFINE():
     # nullDATA=openPickle('nullDATA')
+    runTestsAndPickle()
+    nullTRIALS_FINEautopower=openPickle('autopowerNULL')
+    periodsAUTOPOWER=nullTRIALS_FINEautopower.period
+    
     nullTRIALS_DISCRETE=openPickle('depthResultsDISCRETE')
-    print(nullTRIALS_DISCRETE)
+    nullTRIALS_FINE=openPickle('depthResultsFINE')
+
     # nullTRIALS_FINE=calculateFinePeriodsPer(nullDATA)
-    # nullTRIALS_FINE=openPickle('depthResultsFINE')
+    # percentiles=np.percentile(nullTRIALS_FINEautopower.depth,95.0,axis=0)
+    expectation=returnExpectation(periodsAUTOPOWER)
+    (nullTRIALS_FINEautopower.period)
+    
+#    for factor in np.arange(1.0,2.05,0.2):
+    factor=1.0
+    plt.plot(periodsAUTOPOWER,factor*expectation,'k-')
+        
+    # plt.plot(nullTRIALS_FINEautopower.period,percentiles,'.')
+    # plt.plot(nullTRIALS_FINEautopower.period,np.percentile(nullTRIALS_FINEautopower.depth,95.0,axis=0),'--',alpha=0.5)
+    # plt.xlabel('periods')
+    # plt.ylabel('95th percentiles')
+    
+    print(nullTRIALS_FINEautopower.depth.shape)
+    print(nullTRIALS_FINEautopower.period.shape)
+    print(nullTRIALS_FINEautopower)
+    print(periodsAUTOPOWER.shape)
+    print(nullTRIALS_DISCRETE.shape)
+    print(nullTRIALS_FINE.shape)
+    periodsTEST=openPickle('testJAN11')
 
-    plotDataAndAnalyzeThresholds(nullTRIALS_DISCRETE)
-    # plotDataAndAnalyzeThresholds(nullTRIALS_FINE)
+    print(periodsTEST.shape)
+    
+    
+    # y=np.percentile(nullTRIALS_FINEautopower.depth,95.0,axis=0)
+#    y2=np.percentile(nullTRIALS_DISCRETE,95.0,axis=0)
+    
+#    print('y amount:',y2)
+    
+    x=np.sqrt(periodsAUTOPOWER)
+    degree=3
+    coeff=np.polyfit(x,nullTRIALS_FINEautopower.depth,degree)
+    threshold=np.polyval(coeff,x)
+    plt.plot(x**2,threshold,'b-')
+    print(coeff)
+    
+    
+    
+    # nullTRIALSRATIO=nullTRIALS_FINEautopower/threshold
+    # print(np.percentile(np.max(nullTRIALS_DISCRETE,axis=1),95.0))
+    # plotDataAndAnalyzeThresholds(nullTRIALS_FINEautopower)
 
-comparingNull_Negative_Periodic_thresholds()   
-# start = time.time()
-# thresholdREFINE()
-# end = time.time()
-# print(end - start)
+# comparingNull_Negative_Periodic_thresholds()   
+thresholdREFINE()
