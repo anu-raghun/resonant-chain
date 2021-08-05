@@ -95,7 +95,7 @@ def mainshit():
     (ax1), (ax2), (ax3)= axs
     
     plt.xlabel("ln box model periods")
-    
+     
     ax1.plot(np.log(periods),np.log(np.absolute(infoPERPERIOD[:,0])),'ko',label='data with signal')
     ax1.plot(np.log(periods),np.log(infoPERPERIODNULL[:,0]),'bo',label='null data')
     ax1.set(ylabel='ln max diffLL')
@@ -461,5 +461,12 @@ def thresholdREFINE():
     # print(np.percentile(np.max(nullTRIALS_DISCRETE,axis=1),95.0))
     # plotDataAndAnalyzeThresholds(nullTRIALS_FINEautopower)
 
+
+def paperAnalysis():
+    periodic1=bf.makePeriodicData(mu,sd,nPoints,period,offset,insides,transitDepth)
+    
+    
 # comparingNull_Negative_Periodic_thresholds()   
-thresholdREFINE()
+# thresholdREFINE()
+
+paperAnalysis()

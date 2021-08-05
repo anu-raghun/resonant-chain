@@ -12,9 +12,21 @@ def get_insides(ts,period,toffset,halfduration):
 def get_depths(brightness,insides,outsidesAverage):
     return outsidesAverage-np.mean(brightness[np.array(insides)])
 
-def makePeriodicData(mu,sd,nPoints,period,offset,insides,transitDepth):
+def get_depths_Per_Point(brightness,insides,outsidesAverage):
+    return outsidesAverage-brightness[np.array(insides)]
+
+def makePeriodicData(mu,sd,nPoints,insides,transitDepth):
     brightness = mu * np.ones(nPoints)
     brightness[np.asarray(insides)]-= transitDepth
+#    randNoise = np.random.normal(0,sd,nPoints)
+    brightness=brightness+np.random.normal(0,sd,nPoints)
+    return brightness
+
+
+def makePeriodicDataResonance(mu,sd,nPoints,insides,insides2,transitDepth,transitDepth2):
+    brightness = mu * np.ones(nPoints)
+    brightness[np.asarray(insides)]-= transitDepth
+    brightness[np.asarray(insides2)]-= transitDepth2
 #    randNoise = np.random.normal(0,sd,nPoints)
     brightness=brightness+np.random.normal(0,sd,nPoints)
     return brightness
@@ -30,11 +42,23 @@ def periodicBoxModelAlterableDepth(t,trange,mu,depths,insides):
     return line
 
 
-def computeDeltaLLPeriodic(mu,insides,depths,sd,brightness):
+def computeDeltaLLPeriodic(mu,insides,depth,sd,brightness):
     JJ=np.array(insides)
-    d2=np.sum(-0.5*(brightness[JJ]-(mu-depths))**2/sd[JJ]**2)
-    d2Null=np.sum(-0.5*(brightness[JJ]-mu)**2/sd[JJ]**2)
+    d2=np.sum(-0.5*(brightness[JJ]-(mu-depth))**2/(sd[JJ]**2))
+    d2Null=np.sum(-0.5*(brightness[JJ]-mu)**2/(sd[JJ]**2))
     return d2-d2Null
+
+def computeDeltaLLPeriodicResonantChain(mu,insidesARRAY,depthARRAY,sd,brightness):
+    i=0
+    dfinal=0
+    while (i<len(insidesARRAY)):
+        insides=insidesARRAY[i]
+        JJ=np.array(insides)
+        d2=np.sum(-0.5*(brightness[JJ]-(mu-depthARRAY[i]))**2/(sd[JJ]**2))
+        d2Null=np.sum(-0.5*(brightness[JJ]-mu)**2/(sd[JJ]**2))
+        dfinal=dfinal+d2-d2Null
+        i+=1
+    return dfinal
 
 def drawColorBar(xARRAY,yARRAY,COLORBAR,xLabel,yLabel,colorBarLabel):
     plt.figure()
